@@ -1,0 +1,10 @@
+const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
+const observer=new IntersectionObserver(entries=>{for(const entry of entries)if(entry.isIntersecting){entry.target.classList.add('visible');observer.unobserve(entry.target);}}, {threshold:.08});
+for(const item of document.querySelectorAll('.reveal')){if(reduced)item.classList.add('visible');else observer.observe(item);}
+for(const link of document.querySelectorAll('nav a'))if(link.getAttribute('href')===(location.pathname.split('/').pop()||'index.html'))link.setAttribute('aria-current','page');
+for(const button of document.querySelectorAll('[data-copy]'))button.onclick=async()=>{const feedback=button.parentElement.querySelector('.copy-feedback');try{await navigator.clipboard.writeText(button.dataset.copy);feedback.textContent='Copied.';}catch{feedback.textContent='Select and copy the command manually.';}};
+for(const button of document.querySelectorAll('[data-mode]'))button.onclick=()=>{for(const tab of document.querySelectorAll('[data-mode]'))tab.setAttribute('aria-pressed',String(tab===button));document.getElementById('freeInstructions').hidden=button.dataset.mode!=='free';document.getElementById('paidInstructions').hidden=button.dataset.mode!=='paid';};
+document.addEventListener('visibilitychange',()=>document.body.classList.toggle('paused',document.hidden));
+
+const replay=document.getElementById('replay-workflow');
+if(replay){let run=0;const stages=[...document.querySelectorAll('#workflow-stages li')];replay.addEventListener('click',async()=>{const currentRun=++run;replay.disabled=true;for(const stage of stages)stage.classList.remove('current');for(let i=0;i<stages.length;i++){if(currentRun!==run)return;stages[i].classList.add('current');document.getElementById('workflow-feedback').textContent=`Example stage ${i+1} of 4. No real action is executed.`;if(!reduced)await new Promise(resolve=>setTimeout(resolve,850));}document.getElementById('workflow-feedback').textContent='Example complete. No clipboard or account was changed.';replay.disabled=false;});}
